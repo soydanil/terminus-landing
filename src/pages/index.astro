@@ -1,0 +1,1019 @@
+---
+import "../styles/global.css";
+
+/**
+ * La página de Terminus.
+ *
+ * **Enseña el producto antes de describirlo.** La captura de la aplicación
+ * entra en los primeros 600 px y queda recortada por el borde de la pantalla a
+ * propósito: quien llega ve la cosa funcionando y decide si le sirve sin leer
+ * un párrafo. Es HTML, no una imagen — se lee con lector de pantalla, escala
+ * sin pixelarse, y los rótulos están copiados de la app («tarea», «material»,
+ * «carpeta de trabajo», «Memoria», «solo lectura»), no inventados para la
+ * foto. Una captura que promete una interfaz que no existe se paga en la
+ * primera instalación.
+ *
+ * **La página es de Terminus; Danil la firma.** Arriba va el icono real de la
+ * aplicación —el mismo que va a quedar en el menú de inicio— y abajo, una sola
+ * vez, el wordmark de la casa. Poner las dos marcas al mismo peso obliga a
+ * quien llega a decidir de quién es esto antes de saber qué es.
+ *
+ * **No promete lo que la app todavía no hace.** Hoy no está firmada con un
+ * certificado del sistema, así que Windows avisa en la primera instalación, y
+ * macOS no tiene instalador publicado. Las dos cosas se dicen aquí —con su
+ * sección propia y un enlace desde el botón mismo— en vez de que alguien las
+ * descubra al abrir el instalador: un aviso rojo del sistema operativo que
+ * nadie anticipó es lo que hace que la gente cierre y no vuelva.
+ *
+ * **Y no hay número de versión escrito.** El enlace apunta a la release más
+ * reciente, que es la que GitHub resuelve sola. Un número aquí se queda viejo
+ * el día que se publique la siguiente, y nadie se acuerda de venir a cambiarlo.
+ */
+const RELEASES = "https://github.com/soydanil/terminus/releases/latest";
+/**
+ * **Nombre estable, sin versión dentro.** Escribir
+ * `Terminus_0.1.3_x64-setup.exe` aquí rompe el botón el día que salga la
+ * siguiente: `latest` resuelve la release, pero el nombre del archivo tiene que
+ * existir tal cual dentro de ella. Cada release publica además una copia con
+ * este nombre, y así el enlace no caduca.
+ */
+const DESCARGA = `${RELEASES}/download/Terminus-Windows-Setup.exe`;
+/** El icono de la app instalada. Es el isotipo de Danil: la misma marca. */
+const ICONO = "/marca/terminus-icono.png";
+/**
+ * **macOS está cableado detrás de un flag, no prometido.** Hoy no hay build de
+ * macOS publicada, así que un botón «Descargar para macOS» llevaría a un 404 —
+ * la venta chafa que se paga en el primer clic. El camino está listo y apagado:
+ * el día que exista la build se cambia `false` por `true` y aparece el segundo
+ * botón, nada más. Con `false` la página solo dice, seca, que viene en camino.
+ */
+const MAC_DISPONIBLE = false;
+/**
+ * **Nombre estable del instalador de macOS, sin versión dentro.** Igual que el
+ * de Windows: `latest` resuelve la release y este nombre tiene que existir tal
+ * cual dentro de ella. *Pendiente:* cada release aún no publica esta copia —
+ * hacerlo el día que salga la primera build de macOS, antes de encender el flag.
+ */
+const DESCARGA_MAC = `${RELEASES}/download/Terminus-macOS.dmg`;
+/** El repositorio público de Terminus. */
+const REPO = "https://github.com/soydanil/terminus";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Terminus — agentes de terminal en el escritorio</title>
+    <meta
+      name="description"
+      content="Aplicación de escritorio que corre Claude Code y Codex contra los repositorios de tu organización. El repo entra en solo lectura; el agente trabaja en una carpeta aparte."
+    />
+    <meta property="og:title" content="Terminus" />
+    <meta
+      property="og:description"
+      content="Corre Claude Code y Codex contra los repos de tu organización."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0a0d23" />
+    <link rel="canonical" href="https://terminus.danil.ai/" />
+    <link rel="icon" href={ICONO} type="image/png" />
+    <link rel="apple-touch-icon" href={ICONO} />
+    <!-- Las fuentes son lo primero que se ve; se precargan para que el titular
+         no se dibuje dos veces con dos tipografías distintas. -->
+    <link
+      rel="preload"
+      href="/fuentes/Geist-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fuentes/GeistMono-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+
+  <body>
+    <!-- El fondo. Cuatro capas fijas detrás de todo: rejilla, luz, viñeta y
+         grano. Las dos primeras se mueven a distinta velocidad al hacer scroll
+         —de ahí la profundidad— y ninguna captura el ratón. -->
+    <div class="fondo" aria-hidden="true">
+      <div class="fondo__capa fondo__rejilla" data-parallax="0.05"></div>
+      <div class="fondo__capa fondo__luz" data-parallax="0.16"></div>
+      <div class="fondo__capa fondo__vineta"></div>
+      <div class="fondo__capa fondo__grano"></div>
+    </div>
+    <div class="reglas" aria-hidden="true"><div class="reglas__caja"></div></div>
+
+    <header class="nav">
+      <div class="envoltura nav__fila">
+        <a class="marca" href="/">
+          <span class="marca__placa">
+            <img src={ICONO} alt="" width="17" height="17" />
+          </span>
+          Terminus
+        </a>
+        <nav class="nav__acciones" aria-label="Principal">
+          <a class="nav__enlace" href="#instalar">Instalación</a>
+          <a class="nav__enlace" href="#estado">Estado</a>
+          <a class="boton boton--accion boton--chico" href={DESCARGA}>
+            Descargar
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- ================================================================
+           Hero: la promesa, y debajo la cosa funcionando.
+           =============================================================== -->
+      <section class="envoltura hero">
+        <div class="hero__texto">
+          <p class="pastilla">Aplicación de escritorio · Windows</p>
+          <h1>Corre agentes de terminal contra los repos de tu organización.</h1>
+          <p class="hero__bajada">
+            Claude Code y Codex, en una aplicación de escritorio. Conectas un
+            repositorio: entra en solo lectura. El agente lo lee y escribe en
+            una carpeta de trabajo aparte.
+          </p>
+          <!-- La instalación vive en el hero, no en una sección lejana: el
+               botón y el comando lado a lado, mismo peso. El botón es el camino
+               de un clic; el comando, el de quien ya tiene Node. Cada uno con
+               una nota corta que acota su alcance. -->
+          <div class="hero__lanzador">
+            <div class="hero__instalar" id="instalar">
+              <div class="hero__via">
+                <a class="boton boton--accion boton--grande" href={DESCARGA}>
+                  <svg
+                    class="boton__glifo"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3 5.6 10.4 4.5v7.1H3zM11.6 4.3 21 3v8.6h-9.4zM3 12.5h7.4v7.1L3 18.5zM11.6 12.5H21V21l-9.4-1.3z"
+                    ></path>
+                  </svg>
+                  Descargar para Windows
+                </a>
+                <p class="hero__via-nota">Un clic, sin terminal.</p>
+              </div>
+              <div class="hero__via">
+                <div class="comando">
+                  <code>npx @soydanil/terminus</code>
+                  <button
+                    class="comando__copiar"
+                    type="button"
+                    data-copiar="npx @soydanil/terminus"
+                  >
+                    Copiar
+                  </button>
+                </div>
+                <p class="hero__via-nota">Si ya tienes Node.</p>
+              </div>
+            </div>
+
+            <!-- macOS, honesto: sin botón falso mientras no exista la build. El
+                 camino está detrás de MAC_DISPONIBLE; encenderlo saca el segundo
+                 botón sin tocar nada más. -->
+            {
+              MAC_DISPONIBLE ? (
+                <a
+                  class="boton boton--linea boton--grande hero__mac-boton"
+                  href={DESCARGA_MAC}
+                >
+                  <svg
+                    class="boton__glifo"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8s-1.7-.8-2.9-.8c-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.7 2.2 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7 1.9-1.1 2.6-2.1c.8-1.2 1.2-2.4 1.2-2.4s-2.2-.9-2.4-3.6zM14.3 6.1c.6-.7 1-1.7.9-2.7-.9 0-1.9.6-2.5 1.3-.5.6-1 1.6-.9 2.6 1 .1 1.9-.5 2.5-1.2z" />
+                  </svg>
+                  Descargar para macOS
+                </a>
+              ) : (
+                <p class="hero__mac">macOS: en camino.</p>
+              )
+            }
+
+            <!-- El aviso de Windows se enuncia aquí, pegado al botón, y no al
+                 final de la página. Enterarse después de descargar es la forma
+                 más rápida de perder a alguien. -->
+            <p class="hero__requisitos">
+              <span class="mono">Windows 10 u 11 · 64 bits</span>
+              <span class="punto" aria-hidden="true">·</span>
+              <span>Se actualiza sola</span>
+              <span class="punto" aria-hidden="true">·</span>
+              <a class="hero__aviso" href="#estado">
+                Windows avisa la primera vez
+              </a>
+            </p>
+
+            <!-- Los agentes con los que corre, pegados a la instalación — la
+                 fila «Works with» de la referencia. Monocromo, los mismos glifos
+                 que la sección de compatibilidad de más abajo. -->
+            <div class="hero__compat">
+              <span class="hero__compat-rotulo">Funciona con</span>
+              <div class="hero__agentes">
+                <span class="hero__agente">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                    <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" />
+                  </svg>
+                  Claude Code
+                </span>
+                <span class="hero__agente">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1-4-4 4 4 0 0 1 4-4 4 4 0 0 1 4-4z" />
+                  </svg>
+                  Codex
+                </span>
+                <span class="hero__agente">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                    <path d="M5 5l14 14M19 5l-6 6" />
+                  </svg>
+                  Grok
+                </span>
+                <span class="hero__agente">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="13" r="7" />
+                    <path d="M12 16.5V9M9 12l3-3 3 3" />
+                  </svg>
+                  Antigravity
+                </span>
+                <span class="hero__agente">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M7 10l3 2-3 2M13 15h4" />
+                  </svg>
+                  OpenCode
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- La aplicación. Tres columnas, como en el escritorio: de dónde lee,
+             la conversación, y lo que la tarea dejó escrito. -->
+        <figure class="marco" aria-label="La ventana de Terminus con una tarea abierta">
+          <div class="ventana__barra">
+            <span class="marca__placa" aria-hidden="true">
+              <img src={ICONO} alt="" width="17" height="17" />
+            </span>
+            <span class="ventana__titulo">Terminus</span>
+            <span class="ventana__controles" aria-hidden="true">
+              <span>—</span><span>▢</span><span>✕</span>
+            </span>
+          </div>
+
+          <div class="ventana__cuerpo">
+            <!-- Barra lateral: tareas agrupadas en proyectos. -->
+            <div class="panel panel--izq">
+              <div class="boton-app">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+                  <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z" />
+                </svg>
+                Nueva tarea
+              </div>
+
+              <p class="panel__rotulo" style="margin-top: 0.4rem;">Proyectos</p>
+              <div class="fila">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h5l2 2h9v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+                </svg>
+                <span class="fila__nombre">Facturación</span>
+              </div>
+              <div class="fila fila--hija fila--activa">
+                <span class="fila__nombre">Cambio de plan a mitad de mes</span>
+              </div>
+              <div class="fila fila--hija">
+                <span class="fila__nombre">Qué ve el cliente al bajar de plan</span>
+              </div>
+              <div class="fila">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h5l2 2h9v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+                </svg>
+                <span class="fila__nombre">Onboarding</span>
+              </div>
+
+              <p class="panel__rotulo" style="margin-top: 0.6rem;">Recientes</p>
+              <div class="fila">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                <span class="fila__nombre">Límites del plan Starter</span>
+              </div>
+              <div class="fila">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                <span class="fila__nombre">Qué pasa si falla un pago</span>
+              </div>
+
+              <div class="fila" style="margin-top: 0.75rem;">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="12" rx="1" />
+                  <path d="M2 20h20" />
+                </svg>
+                <span class="fila__nombre">Esta computadora</span>
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: auto;">
+                  <path d="m7 15 5 5 5-5M7 9l5-5 5 5" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Conversación. Sin avatares: el lado y el fondo ya dicen quién
+                 habla, que es lo que decide la app. -->
+            <div class="panel panel--centro">
+              <div class="franja">
+                <span class="franja__titulo">Cambio de plan a mitad de mes</span>
+                <span class="franja__dato">$0,04</span>
+                <span class="franja__dato">Memoria</span>
+                <span class="medidor" aria-hidden="true">
+                  <span class="medidor__lleno" style="width: 18%;"></span>
+                </span>
+                <span class="franja__dato">14k / 200k</span>
+                <span class="franja__dato" style="margin-left: auto;">
+                  Artefactos (3)
+                </span>
+              </div>
+
+              <div class="hilo">
+                <p class="dicho">
+                  Si un cliente cambia de plan a mitad de mes, ¿qué se le cobra?
+                  Se lo tengo que explicar hoy y no quiero inventármelo.
+                </p>
+
+                <div>
+                  <p class="firma">
+                    <span class="firma__agente">Claude Code</span>
+                    <span class="firma__cuenta">marta@acme.com</span>
+                  </p>
+
+                  <div class="linea" style="margin: 0.5rem 0 0.65rem;">
+                    <p class="acto">
+                      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                      </svg>
+                      <span class="acto__verbo">Leyó 14 archivos</span>
+                      <span class="acto__sujeto">acme-api/billing</span>
+                    </p>
+                    <p class="acto">
+                      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" />
+                      </svg>
+                      <span class="acto__verbo">Buscó 3 veces</span>
+                      <span class="acto__sujeto">prorrateo</span>
+                    </p>
+                    <p class="acto">
+                      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L13 12l-4 1 1-4z" />
+                      </svg>
+                      <span class="acto__verbo">Escribió</span>
+                      <span class="acto__sujeto">cambio-de-plan.md</span>
+                      <span class="acto__marca">+42</span>
+                    </p>
+                  </div>
+
+                  <p class="respuesta">
+                    Se le cobra <strong>la parte proporcional a los días que
+                    quedan del mes</strong>, y el cargo aparece en la factura
+                    siguiente, no al instante. Si el plan nuevo es más barato no
+                    hay devolución: queda como saldo a favor para el mes que
+                    viene. Te dejé el detalle y la frase exacta que puedes
+                    copiarle al cliente.
+                  </p>
+
+                  <p class="entrega" style="margin-top: 0.65rem;">
+                    <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M12 12v6M9 15h6" />
+                    </svg>
+                    Produjo
+                    <span class="entrega__ruta">cambio-de-plan.md</span>
+                    <span class="entrega__peso">12,4 kB</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="compositor">
+                <p class="compositor__contexto">
+                  Contexto:
+                  <span class="sello">acme-api · main</span>
+                  <span class="sello">docs-producto · main</span>
+                </p>
+                <div class="compositor__fila">
+                  <span class="tecla-redonda" aria-hidden="true">
+                    <svg class="icono" viewBox="0 0 24 24">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
+                  <span class="compositor__texto">Pregunta algo</span>
+                  <span class="selector">Claude Sonnet ⌄</span>
+                  <span class="tecla-redonda tecla-redonda--enviar" aria-hidden="true">
+                    <svg class="icono" viewBox="0 0 24 24">
+                      <path d="M12 19V5M5 12l7-7 7 7" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <p class="consumo">
+                <span>Claude</span>
+                <span class="medidor" aria-hidden="true">
+                  <span class="medidor__lleno" style="width: 78%;"></span>
+                </span>
+                <span>78 % resta</span>
+                <span class="franja-larga">· repone en 2 h 14 min</span>
+              </p>
+            </div>
+
+            <!-- Artefactos: lo que salió de la tarea, separado de lo que entró.
+                 Aquí se ve el contrato del producto — lo adjuntado va marcado
+                 `solo lectura`, y lo escrito vive en la carpeta de trabajo. -->
+            <div class="panel panel--der">
+              <p class="franja__titulo" style="padding: 0.25rem;">Artefactos (3)</p>
+
+              <p class="panel__rotulo" style="margin-top: 0.4rem;">
+                Producido en esta tarea
+              </p>
+              <p class="artefacto">
+                <span class="sello sello--salida">salida</span>
+                <span class="artefacto__ruta">cambio-de-plan.md</span>
+                <span class="artefacto__peso">12,4 kB</span>
+              </p>
+
+              <p class="panel__rotulo" style="margin-top: 0.6rem;">
+                Lo que adjuntaste
+              </p>
+              <p class="artefacto">
+                <span class="sello sello--entrada">entrada</span>
+                <span class="artefacto__ruta">acme-api</span>
+                <span class="artefacto__peso">solo lectura</span>
+              </p>
+              <p class="artefacto">
+                <span class="sello sello--entrada">entrada</span>
+                <span class="artefacto__ruta">docs-producto</span>
+                <span class="artefacto__peso">solo lectura</span>
+              </p>
+
+              <p class="boton-fantasma">Abrir carpeta de trabajo</p>
+            </div>
+          </div>
+        </figure>
+      </section>
+
+      <!-- ================================================================
+           El problema. Después de la captura: primero se ve la cosa, luego
+           se dice por qué hacía falta.
+           =============================================================== -->
+      <section class="envoltura seccion" style="margin-top: clamp(3rem, 6vw, 5rem);">
+        <div class="encabezado-seccion" style="margin-bottom: 2.5rem;">
+          <p class="rotulo">Qué es</p>
+          <h2>Una aplicación de escritorio para agentes de terminal.</h2>
+        </div>
+        <div class="dos-columnas">
+          <p class="suave">
+            Claude Code y Codex corren dentro de la aplicación. Git y los CLI
+            vienen incluidos; no instalas nada en tu sistema.
+          </p>
+          <p class="suave">
+            Conectas los repositorios de tu organización. Entran en
+            <strong>solo lectura</strong>. El agente los lee y trabaja en una
+            carpeta aparte.
+          </p>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Cómo funciona. Tres pasos numerados, cada uno con el dato de la
+           app debajo — no el texto solo.
+           =============================================================== -->
+      <section class="envoltura seccion">
+        <div class="encabezado-seccion">
+          <p class="rotulo">Cómo funciona</p>
+          <h2>Conectas, lee, produce.</h2>
+          <p class="suave">
+            Tres pasos. El repositorio no se escribe en ninguno.
+          </p>
+        </div>
+
+        <ol class="pasos">
+          <li class="paso">
+            <span class="paso__num">01</span>
+            <h3>Conectas un repositorio</h3>
+            <p>
+              Lo señalas y entra como contexto de solo lectura. No se clona en
+              tu sistema ni se modifica.
+            </p>
+            <div class="paso__visual">
+              <p class="dato">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h5l2 2h9v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+                </svg>
+                acme-api
+                <span class="dato__fin">solo lectura</span>
+              </p>
+              <p class="dato">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h5l2 2h9v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+                </svg>
+                docs-producto
+                <span class="dato__fin">solo lectura</span>
+              </p>
+            </div>
+          </li>
+
+          <li class="paso">
+            <span class="paso__num">02</span>
+            <h3>El agente lo lee</h3>
+            <p>
+              Claude Code o Codex recorren el material y buscan lo que hace
+              falta. Cada paso queda anotado.
+            </p>
+            <div class="paso__visual">
+              <div class="linea">
+                <p class="acto">
+                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6" />
+                  </svg>
+                  <span class="acto__verbo">Leyó 14 archivos</span>
+                  <span class="acto__sujeto">acme-api/billing</span>
+                </p>
+                <p class="acto">
+                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                  </svg>
+                  <span class="acto__verbo">Buscó 3 veces</span>
+                  <span class="acto__sujeto">prorrateo</span>
+                </p>
+              </div>
+            </div>
+          </li>
+
+          <li class="paso">
+            <span class="paso__num">03</span>
+            <h3>Produce un artefacto</h3>
+            <p>
+              La respuesta y los archivos que escribe salen a una carpeta de
+              trabajo aparte. Nada vuelve al repositorio.
+            </p>
+            <div class="paso__visual">
+              <p class="artefacto">
+                <span class="sello sello--salida">salida</span>
+                <span class="artefacto__ruta">cambio-de-plan.md</span>
+                <span class="artefacto__peso">12,4 kB</span>
+              </p>
+              <p class="boton-fantasma">Abrir carpeta de trabajo</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ================================================================
+           Las reglas. Cada tarjeta enseña el dato, no solo lo cuenta.
+           =============================================================== -->
+      <section class="envoltura seccion">
+        <div class="encabezado-seccion">
+          <p class="rotulo">Las reglas</p>
+          <h2>Cuatro reglas.</h2>
+        </div>
+
+        <div class="rejilla">
+          <article class="tarjeta">
+            <h3>Tu repositorio no se toca</h3>
+            <p>
+              El agente corre en una carpeta de trabajo aparte. El repositorio
+              entra en solo lectura.
+            </p>
+            <div class="tarjeta__prueba">
+              <p class="dato">
+                acme-api/
+                <span class="dato__fin">solo lectura</span>
+              </p>
+              <p class="dato">
+                carpeta de trabajo/
+                <span class="dato__fin">aquí escribe</span>
+              </p>
+            </div>
+          </article>
+
+          <article class="tarjeta">
+            <h3>Sin instalar nada</h3>
+            <p>
+              Git y los CLI de los agentes vienen dentro de la aplicación. No
+              tocan tu sistema.
+            </p>
+            <div class="tarjeta__prueba">
+              <div class="chips">
+                <span class="chip">git</span>
+                <span class="chip">claude</span>
+                <span class="chip">codex</span>
+              </div>
+              <p class="dato">dentro de la aplicación · no en tu sistema</p>
+            </div>
+          </article>
+
+          <article class="tarjeta">
+            <h3>Tu propia suscripción</h3>
+            <p>
+              Usa tu sesión de Claude o Codex, con tus propios límites. Terminus
+              no guarda credenciales.
+            </p>
+            <div class="tarjeta__prueba">
+              <p class="dato">
+                <span class="punto-estado" aria-hidden="true"></span>
+                claude
+                <span class="dato__fin">sesión iniciada</span>
+              </p>
+              <p class="dato">
+                <span class="punto-estado" aria-hidden="true"></span>
+                codex
+                <span class="dato__fin">sesión iniciada</span>
+              </p>
+            </div>
+          </article>
+
+          <article class="tarjeta">
+            <h3>Tus herramientas, con tus permisos</h3>
+            <p>
+              Figma, Jira y Confluence se conectan por OAuth. Cada una con los
+              permisos de tu cuenta.
+            </p>
+            <div class="tarjeta__prueba">
+              <div class="chips">
+                <span class="chip">
+                  <span class="punto-estado" aria-hidden="true"></span>figma
+                </span>
+                <span class="chip">
+                  <span class="punto-estado" aria-hidden="true"></span>atlassian
+                </span>
+              </div>
+              <p class="dato">Jira y Confluence entran con la misma conexión</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Momentos. La app en más de una pantalla: conectar una herramienta
+           y leer el artefacto que quedó. Mismo chrome de ventana que el hero,
+           alternando lado para dar ritmo.
+           =============================================================== -->
+      <section class="envoltura seccion">
+        <div class="encabezado-seccion">
+          <p class="rotulo">En la aplicación</p>
+          <h2>No es una sola pantalla.</h2>
+          <p class="suave">
+            Conectar una herramienta y leer lo que el agente escribió son dos
+            momentos distintos. Aquí están los dos.
+          </p>
+        </div>
+
+        <!-- Momento 1 — conectar una herramienta por MCP. -->
+        <div class="momento">
+          <div class="momento__texto">
+            <h3>Conectas una herramienta con un botón.</h3>
+            <p>
+              Figma, Jira o Confluence entran por OAuth. Cada servidor trabaja
+              con los permisos de tu cuenta — Terminus no guarda credenciales de
+              nadie.
+            </p>
+            <p class="dato-linea">
+              La conexión es del sistema, no de la conversación.
+            </p>
+          </div>
+
+          <figure class="vista" aria-label="El panel de herramientas de Terminus, con Figma y Atlassian conectados">
+            <div class="ventana__barra">
+              <span class="marca__placa" aria-hidden="true">
+                <img src={ICONO} alt="" width="17" height="17" />
+              </span>
+              <span class="ventana__titulo">Herramientas</span>
+              <span class="ventana__controles" aria-hidden="true">
+                <span>—</span><span>▢</span><span>✕</span>
+              </span>
+            </div>
+            <div class="vista__cuerpo">
+              <p class="panel__rotulo">Conectadas</p>
+              <p class="vista__fila">
+                <svg class="vista__marca" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <rect x="8.5" y="3" width="7" height="6" rx="3" />
+                  <rect x="8.5" y="9" width="7" height="6" rx="3" />
+                  <path d="M8.5 3H5a3 3 0 0 0 0 6h3.5M8.5 9H5a3 3 0 0 0 0 6h3.5" />
+                  <circle cx="19" cy="12" r="3" />
+                  <path d="M8.5 15v3a3 3 0 1 1-3.5-3z" />
+                </svg>
+                <span class="vista__nombre">Figma</span>
+                <span class="sello sello--salida vista__fin">conectado</span>
+              </p>
+              <p class="vista__fila">
+                <svg class="vista__marca" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 11l8 8 8-8" />
+                  <path d="M8 5l4 4 4-4" />
+                </svg>
+                <span class="vista__nombre">Jira</span>
+                <span class="vista__sub">y Confluence</span>
+                <span class="sello sello--salida vista__fin">conectado</span>
+              </p>
+              <p class="panel__rotulo" style="margin-top: 0.4rem;">Disponibles</p>
+              <p class="vista__fila">
+                <svg class="vista__marca" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.3-4.5-1.1-4.5-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.6s.8-.3 2.7 1a9.3 9.3 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .4 1 .2 2 .1 2.6a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.7-4.5 5 .3.3.6.9.6 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" />
+                </svg>
+                <span class="vista__nombre">GitHub</span>
+                <span class="boton-fantasma vista__fin" style="margin-top: 0; padding: 0.25rem 0.6rem;">Conectar</span>
+              </p>
+            </div>
+          </figure>
+        </div>
+
+        <!-- Momento 2 — el artefacto abierto. Invertido: la vista a la izquierda. -->
+        <div class="momento momento--inverso">
+          <div class="momento__texto">
+            <h3>El resultado es un archivo, no un mensaje.</h3>
+            <p>
+              Lo que el agente escribe queda como artefacto en la carpeta de
+              trabajo. Se abre, se relee y se comparte — no se pierde al cerrar
+              la conversación.
+            </p>
+            <p class="dato-linea">
+              Markdown, texto o lo que la tarea produzca.
+            </p>
+          </div>
+
+          <figure class="vista" aria-label="El artefacto cambio-de-plan.md abierto en Terminus">
+            <div class="ventana__barra">
+              <span class="marca__placa" aria-hidden="true">
+                <img src={ICONO} alt="" width="17" height="17" />
+              </span>
+              <span class="ventana__titulo mono">cambio-de-plan.md</span>
+              <span class="ventana__controles" aria-hidden="true">
+                <span>—</span><span>▢</span><span>✕</span>
+              </span>
+            </div>
+            <div class="vista__cuerpo vista__doc">
+              <div class="vista__cabecera">
+                <span class="sello sello--salida">salida</span>
+                <span class="artefacto__ruta">carpeta-de-trabajo/cambio-de-plan.md</span>
+                <span class="artefacto__peso">12,4 kB</span>
+              </div>
+              <h4>Cambio de plan a mitad de mes</h4>
+              <p>
+                Al cliente se le cobra la parte proporcional a los días que
+                quedan del mes. El cargo aparece en la factura siguiente, no al
+                instante.
+              </p>
+              <ul>
+                <li><strong>Sube de plan:</strong> se prorratea el mes en curso.</li>
+                <li><strong>Baja de plan:</strong> el saldo queda a favor.</li>
+                <li>La factura del mes siguiente lleva el ajuste.</li>
+              </ul>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Compatible con. Dos filas de logos en una sola tinta — agentes y
+           herramientas. El nombre real lleva el reconocimiento; el glifo pone
+           textura.
+           =============================================================== -->
+      <section class="envoltura seccion">
+        <div class="encabezado-seccion">
+          <p class="rotulo">Compatibilidad</p>
+          <h2>Y tus herramientas, con tus permisos.</h2>
+          <p class="suave">
+            Los agentes corren con tu suscripción — los ves arriba. Las
+            herramientas entran por MCP con OAuth, cada una con los permisos de
+            tu cuenta.
+          </p>
+        </div>
+
+        <div class="compat">
+          <div class="compat__grupo">
+            <div class="logos">
+              <span class="logo">
+                <svg class="logo__glifo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <rect x="8.5" y="3" width="7" height="6" rx="3" />
+                  <rect x="8.5" y="9" width="7" height="6" rx="3" />
+                  <path d="M8.5 3H5a3 3 0 0 0 0 6h3.5M8.5 9H5a3 3 0 0 0 0 6h3.5" />
+                  <circle cx="19" cy="12" r="3" />
+                  <path d="M8.5 15v3a3 3 0 1 1-3.5-3z" />
+                </svg>
+                <span class="logo__nombre">Figma</span>
+              </span>
+              <span class="logo">
+                <svg class="logo__glifo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 11l8 8 8-8" />
+                  <path d="M8 5l4 4 4-4" />
+                </svg>
+                <span class="logo__nombre">Jira</span>
+              </span>
+              <span class="logo">
+                <svg class="logo__glifo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+                  <path d="M3.5 15c4-5.5 8.5 3 17-1.5" />
+                  <path d="M20.5 9C16.5 14.5 8 6 3.5 10.5" />
+                </svg>
+                <span class="logo__nombre">Confluence</span>
+              </span>
+              <span class="logo">
+                <svg class="logo__glifo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.4-2.2-.3-4.5-1.1-4.5-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.6s.8-.3 2.7 1a9.3 9.3 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .4 1 .2 2 .1 2.6a3.9 3.9 0 0 1 1 2.7c0 3.9-2.3 4.7-4.5 5 .3.3.6.9.6 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" />
+                </svg>
+                <span class="logo__nombre">GitHub</span>
+              </span>
+              <span class="logo">
+                <svg class="logo__glifo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 5h18l-2.4 14H5.4z" />
+                  <path d="M10 10.5h4l-.7 4h-2.6z" />
+                </svg>
+                <span class="logo__nombre">Bitbucket</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           En qué punto está. Lo que falta, escrito, no escondido.
+           =============================================================== -->
+      <section class="envoltura seccion" id="estado">
+        <div class="encabezado-seccion">
+          <p class="rotulo">Estado</p>
+          <h2>En qué punto está.</h2>
+        </div>
+
+        <div class="estado">
+          <div class="estado__fila">
+            <p class="estado__que">Windows 10 u 11</p>
+            <p class="estado__detalle">
+              Instalador de 64 bits. Se actualiza sola.
+            </p>
+            <p class="estado__marca">
+              <span class="punto-estado" aria-hidden="true"></span>Disponible
+            </p>
+          </div>
+          <div class="estado__fila">
+            <p class="estado__que">macOS</p>
+            <p class="estado__detalle">Sin instalador.</p>
+            <p class="estado__marca">
+              <span class="punto-estado punto-estado--apagado" aria-hidden="true"></span>
+              Todavía no
+            </p>
+          </div>
+          <div class="estado__fila">
+            <p class="estado__que">Firma de código</p>
+            <p class="estado__detalle">
+              Sin certificado. Windows avisa la primera vez:
+              <span class="mono">Más información → Ejecutar de todos modos</span>.
+            </p>
+            <p class="estado__marca">
+              <span class="punto-estado punto-estado--apagado" aria-hidden="true"></span>
+              Pendiente
+            </p>
+          </div>
+          <div class="estado__fila">
+            <p class="estado__que">
+              <a class="estado__enlace" href={REPO}>Código fuente</a>
+            </p>
+            <p class="estado__detalle">Público · Apache-2.0.</p>
+            <p class="estado__marca">
+              <span class="punto-estado" aria-hidden="true"></span>
+              Público
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           Cierre.
+           =============================================================== -->
+      <section class="envoltura seccion">
+        <div class="cierre">
+          <span class="marca__placa marca__placa--grande">
+            <img src={ICONO} alt="" width="26" height="26" />
+          </span>
+          <h2>Instálalo y conéctale un repo.</h2>
+          <p class="hero__bajada" style="margin: 0 auto;">
+            La descarga es de Windows y pesa unos megas. Al abrirla ya trae Git y
+            los CLI dentro; tú pones tu suscripción de Claude o Codex.
+          </p>
+          <p class="cierre__recap">
+            <span>
+              <span class="punto-estado" aria-hidden="true"></span>El repo, en solo lectura
+            </span>
+            <span>
+              <span class="punto-estado" aria-hidden="true"></span>El agente, en su carpeta
+            </span>
+            <span>
+              <span class="punto-estado" aria-hidden="true"></span>Tu suscripción, tu cuenta
+            </span>
+          </p>
+          <a class="boton boton--accion" href={DESCARGA}>
+            Descargar para Windows
+          </a>
+          <p class="hero__requisitos">
+            <span class="mono">Windows 10 u 11 · 64 bits</span>
+            <span class="punto" aria-hidden="true">·</span>
+            <a class="hero__aviso" href={RELEASES}>Ver versiones</a>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <div class="envoltura pie__fila">
+        <span class="pie__marca">
+          <span>Terminus es de</span>
+          <a class="firma-casa" href="https://danil.ai">
+            <img src="/marca/danil-wordmark.png" alt="Danil" width="52" height="17" />
+          </a>
+        </span>
+        <span>
+          <a href="#instalar">Instalación</a> ·
+          <a href={RELEASES}>Versiones</a>
+        </span>
+      </div>
+    </footer>
+
+    <script is:inline>
+      /*
+       * Dos cosas en un solo oyente de scroll: el paralaje del fondo y la barra
+       * de arriba, que se enciende al despegarse. Van juntas porque dos oyentes
+       * pintando a la vez es la forma más fácil de que una página vaya a
+       * tirones — se lee `scrollY` una vez por cuadro y se escribe después.
+       *
+       * Y el paralaje se apaga entero con `prefers-reduced-motion`: un fondo
+       * que se mueve solo es justo lo que marea a quien pide que no se mueva.
+       */
+      (() => {
+        const quieto = matchMedia("(prefers-reduced-motion: reduce)");
+        const capas = Array.from(document.querySelectorAll("[data-parallax]"));
+        const barra = document.querySelector(".nav");
+        /* Las capas sobresalen un 35 % del alto de la ventana por arriba y por
+           abajo; pasado ese tope se vería el canto, así que ahí se detienen. */
+        const TOPE = () => window.innerHeight * 0.3;
+        let pendiente = false;
+
+        const pintar = () => {
+          pendiente = false;
+          const y = window.scrollY;
+          barra.classList.toggle("pegado", y > 8);
+          if (quieto.matches) return;
+          const tope = TOPE();
+          for (const capa of capas) {
+            const d = Math.min(y * Number(capa.dataset.parallax), tope);
+            capa.style.transform = "translate3d(0," + -d.toFixed(1) + "px,0)";
+          }
+        };
+
+        addEventListener(
+          "scroll",
+          () => {
+            if (!pendiente) {
+              pendiente = true;
+              requestAnimationFrame(pintar);
+            }
+          },
+          { passive: true },
+        );
+        pintar();
+      })();
+    </script>
+
+    <script is:inline>
+      /* El bloque `npx` es copiable: un clic pone el comando en el
+         portapapeles y el botón lo confirma un momento. Si el navegador no da
+         acceso al portapapeles, el comando sigue ahí para seleccionarlo a
+         mano. */
+      (() => {
+        const btn = document.querySelector(".comando__copiar");
+        if (!btn) return;
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(btn.dataset.copiar);
+            const antes = btn.textContent;
+            btn.textContent = "Copiado";
+            setTimeout(() => {
+              btn.textContent = antes;
+            }, 1500);
+          } catch {}
+        });
+      })();
+    </script>
+  </body>
+</html>

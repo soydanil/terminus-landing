@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "terminus-web",
+  "compatibility_date": "2026-08-14",
+  // Sitio estático servido por Workers. Sin backend: la descarga vive en la
+  // release de GitHub, así que aquí no hay nada que ejecutar por visitante.
+  "assets": { "directory": "./dist" },
+  // El dominio va aquí y no a mano en el panel: así el despliegue y su dirección
+  // viajan en el mismo commit, y quien clone esto no tiene que adivinar dónde
+  // vive la página.
+  "routes": [{ "pattern": "terminus.danil.ai", "custom_domain": true }]
+}
