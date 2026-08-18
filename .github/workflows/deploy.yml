@@ -1,0 +1,39 @@
+# Publica la landing en Cloudflare al hacer push a main.
+#
+# Quien edita la página no necesita saber desplegar: hace push y esto la
+# actualiza en terminus.danil.ai. En un repo público las Actions son gratis.
+#
+# Requisito único: el secreto CLOUDFLARE_API_TOKEN en el repo
+# (Settings → Secrets and variables → Actions). Un token de Cloudflare con
+# permiso "Edit Cloudflare Workers". La cuenta va en wrangler.jsonc (no es
+# secreto); el token sí.
+name: Desplegar la landing
+
+on:
+  push:
+    branches: [main]
+  # Permite dispararlo a mano desde la pestaña Actions.
+  workflow_dispatch:
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar
+        run: npm run build
+
+      - name: Desplegar a Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: deploy

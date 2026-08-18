@@ -1,6 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "terminus-web",
+  // La cuenta de Cloudflare donde vive el Worker. No es secreto (aparece en las
+  // URLs del panel); el token de despliegue sí, y va como secret del CI.
+  "account_id": "e1f9a060a59fa8a648440321571892de",
   "compatibility_date": "2026-08-14",
   // Sitio estático servido por Workers. Sin backend: la descarga vive en la
   // release de GitHub, así que aquí no hay nada que ejecutar por visitante.
