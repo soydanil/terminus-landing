@@ -64,15 +64,15 @@ const REPO = "https://github.com/soydanil/terminus";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Terminus — agentes de terminal en el escritorio</title>
+    <title>Terminus — el agente no puede escribir tu repo</title>
     <meta
       name="description"
-      content="Aplicación de escritorio que corre Claude Code y Codex contra los repositorios de tu organización. El repo entra en solo lectura; el agente trabaja en una carpeta aparte."
+      content="Aplicación de escritorio que corre Claude Code y Codex contra los repositorios de tu organización. El agente no tiene permiso de escritura sobre el repositorio. Lee en solo lectura y escribe en una carpeta de trabajo aparte."
     />
     <meta property="og:title" content="Terminus" />
     <meta
       property="og:description"
-      content="Corre Claude Code y Codex contra los repos de tu organización."
+      content="El agente no tiene permiso de escritura sobre tu repositorio."
     />
     <meta property="og:type" content="website" />
     <meta name="theme-color" content="#0a0d23" />
@@ -134,11 +134,11 @@ const REPO = "https://github.com/soydanil/terminus";
       <section class="envoltura hero">
         <div class="hero__texto">
           <p class="pastilla">Aplicación de escritorio · Windows</p>
-          <h1>Corre agentes de terminal contra los repos de tu organización.</h1>
+          <h1>Dale trabajo real a la IA. No acceso real a tu empresa.</h1>
           <p class="hero__bajada">
-            Claude Code y Codex, en una aplicación de escritorio. Conectas un
-            repositorio: entra en solo lectura. El agente lo lee y escribe en
-            una carpeta de trabajo aparte.
+            Claude Code y Codex corren dentro de la aplicación, contra los
+            repos de tu organización. Leen todo. Escriben solo en su propia
+            carpeta de trabajo, separada de tu código.
           </p>
           <!-- La instalación vive en el hero, no en una sección lejana: el
                botón y el comando lado a lado, mismo peso. El botón es el camino
@@ -212,6 +212,13 @@ const REPO = "https://github.com/soydanil/terminus";
               <a class="hero__aviso" href="#estado">
                 Windows avisa la primera vez
               </a>
+              <span class="punto" aria-hidden="true">·</span>
+              <a
+                class="hero__aviso"
+                href="mailto:hola@danil.ai?subject=Gobernanza%20de%20agentes"
+              >
+                ¿Agentes contra producción a escala? Hablemos
+              </a>
             </p>
 
             <!-- Los agentes con los que corre, pegados a la instalación — la
@@ -221,8 +228,8 @@ const REPO = "https://github.com/soydanil/terminus";
               <span class="hero__compat-rotulo">Funciona con</span>
               <div class="hero__agentes">
                 <span class="hero__agente">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-                    <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" />
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 18 8 6 13 18M11 18 16 6 21 18" />
                   </svg>
                   Claude Code
                 </span>
@@ -234,7 +241,7 @@ const REPO = "https://github.com/soydanil/terminus";
                 </span>
                 <span class="hero__agente">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-                    <path d="M5 5l14 14M19 5l-6 6" />
+                    <path d="M5 5 19 19M19 5 5 19" />
                   </svg>
                   Grok
                 </span>
@@ -481,17 +488,19 @@ const REPO = "https://github.com/soydanil/terminus";
       <section class="envoltura seccion" style="margin-top: clamp(3rem, 6vw, 5rem);">
         <div class="encabezado-seccion" style="margin-bottom: 2.5rem;">
           <p class="rotulo">Qué es</p>
-          <h2>Una aplicación de escritorio para agentes de terminal.</h2>
+          <h2>Una aplicación de escritorio donde el agente no puede escribir tu repo.</h2>
         </div>
         <div class="dos-columnas">
           <p class="suave">
             Claude Code y Codex corren dentro de la aplicación. Git y los CLI
-            vienen incluidos; no instalas nada en tu sistema.
+            de los agentes vienen incluidos. No instalas ni configuras nada
+            en tu sistema.
           </p>
           <p class="suave">
-            Conectas los repositorios de tu organización. Entran en
-            <strong>solo lectura</strong>. El agente los lee y trabaja en una
-            carpeta aparte.
+            Conectas los repositorios de tu organización y entran en
+            <strong>solo lectura</strong>. El agente no tiene permiso de
+            escritura sobre ellos. Lee ahí y escribe en una carpeta de
+            trabajo aparte.
           </p>
         </div>
       </section>
@@ -503,9 +512,10 @@ const REPO = "https://github.com/soydanil/terminus";
       <section class="envoltura seccion">
         <div class="encabezado-seccion">
           <p class="rotulo">Cómo funciona</p>
-          <h2>Conectas, lee, produce.</h2>
+          <h2>Conecta, lee, produce. Nunca escribe.</h2>
           <p class="suave">
-            Tres pasos. El repositorio no se escribe en ninguno.
+            Tres pasos. El repositorio no se escribe en ninguno. El agente
+            no tiene ese permiso.
           </p>
         </div>
 
@@ -514,8 +524,8 @@ const REPO = "https://github.com/soydanil/terminus";
             <span class="paso__num">01</span>
             <h3>Conectas un repositorio</h3>
             <p>
-              Lo señalas y entra como contexto de solo lectura. No se clona en
-              tu sistema ni se modifica.
+              Lo señalas y entra como contexto de solo lectura, sin permiso de
+              escritura. No se clona en tu sistema ni se modifica.
             </p>
             <div class="paso__visual">
               <p class="dato">
@@ -569,7 +579,8 @@ const REPO = "https://github.com/soydanil/terminus";
             <h3>Produce un artefacto</h3>
             <p>
               La respuesta y los archivos que escribe salen a una carpeta de
-              trabajo aparte. Nada vuelve al repositorio.
+              trabajo aparte. Nada vuelve al repositorio. El agente no tiene
+              permiso para escribir ahí.
             </p>
             <div class="paso__visual">
               <p class="artefacto">
@@ -596,8 +607,10 @@ const REPO = "https://github.com/soydanil/terminus";
           <article class="tarjeta">
             <h3>Tu repositorio no se toca</h3>
             <p>
-              El agente corre en una carpeta de trabajo aparte. El repositorio
-              entra en solo lectura.
+              El agente corre en una carpeta de trabajo aparte y nunca tiene
+              permiso de escritura sobre tu repositorio. Eso no es una
+              política que alguien configuró. Es cómo está construida la
+              aplicación.
             </p>
             <div class="tarjeta__prueba">
               <p class="dato">
@@ -614,8 +627,8 @@ const REPO = "https://github.com/soydanil/terminus";
           <article class="tarjeta">
             <h3>Sin instalar nada</h3>
             <p>
-              Git y los CLI de los agentes vienen dentro de la aplicación. No
-              tocan tu sistema.
+              Git y los CLI de Claude Code y Codex vienen empaquetados en la
+              aplicación. No tocan tu sistema. No hay nada más que instalar.
             </p>
             <div class="tarjeta__prueba">
               <div class="chips">
@@ -630,8 +643,8 @@ const REPO = "https://github.com/soydanil/terminus";
           <article class="tarjeta">
             <h3>Tu propia suscripción</h3>
             <p>
-              Usa tu sesión de Claude o Codex, con tus propios límites. Terminus
-              no guarda credenciales.
+              Corre con tu sesión de Claude o Codex y tus propios límites de
+              uso. Terminus no guarda tus credenciales. No las necesita.
             </p>
             <div class="tarjeta__prueba">
               <p class="dato">
@@ -650,8 +663,8 @@ const REPO = "https://github.com/soydanil/terminus";
           <article class="tarjeta">
             <h3>Tus herramientas, con tus permisos</h3>
             <p>
-              Figma, Jira y Confluence se conectan por OAuth. Cada una con los
-              permisos de tu cuenta.
+              Figma, Jira y Confluence entran por OAuth, con los permisos de
+              tu propia cuenta. No es una cuenta de servicio compartida.
             </p>
             <div class="tarjeta__prueba">
               <div class="chips">
@@ -689,7 +702,7 @@ const REPO = "https://github.com/soydanil/terminus";
             <h3>Conectas una herramienta con un botón.</h3>
             <p>
               Figma, Jira o Confluence entran por OAuth. Cada servidor trabaja
-              con los permisos de tu cuenta — Terminus no guarda credenciales de
+              con los permisos de tu cuenta. Terminus no guarda credenciales de
               nadie.
             </p>
             <p class="dato-linea">
@@ -747,7 +760,7 @@ const REPO = "https://github.com/soydanil/terminus";
             <h3>El resultado es un archivo, no un mensaje.</h3>
             <p>
               Lo que el agente escribe queda como artefacto en la carpeta de
-              trabajo. Se abre, se relee y se comparte — no se pierde al cerrar
+              trabajo. Se abre, se relee y se comparte. No se pierde al cerrar
               la conversación.
             </p>
             <p class="dato-linea">
@@ -797,7 +810,7 @@ const REPO = "https://github.com/soydanil/terminus";
           <p class="rotulo">Compatibilidad</p>
           <h2>Y tus herramientas, con tus permisos.</h2>
           <p class="suave">
-            Los agentes corren con tu suscripción — los ves arriba. Las
+            Los agentes corren con tu suscripción. Los ves arriba. Las
             herramientas entran por MCP con OAuth, cada una con los permisos de
             tu cuenta.
           </p>
@@ -907,14 +920,15 @@ const REPO = "https://github.com/soydanil/terminus";
           <span class="marca__placa marca__placa--grande">
             <img src={ICONO} alt="" width="26" height="26" />
           </span>
-          <h2>Instálalo y conéctale un repo.</h2>
+          <h2>Instálalo. El repo sigue siendo tuyo.</h2>
           <p class="hero__bajada" style="margin: 0 auto;">
-            La descarga es de Windows y pesa unos megas. Al abrirla ya trae Git y
-            los CLI dentro; tú pones tu suscripción de Claude o Codex.
+            La descarga es de Windows y pesa unos megas. Trae Git y los CLI
+            adentro. Tú pones tu suscripción de Claude o Codex. Nosotros no
+            vemos ni guardamos nada de eso.
           </p>
           <p class="cierre__recap">
             <span>
-              <span class="punto-estado" aria-hidden="true"></span>El repo, en solo lectura
+              <span class="punto-estado" aria-hidden="true"></span>El repo, sin permiso de escritura
             </span>
             <span>
               <span class="punto-estado" aria-hidden="true"></span>El agente, en su carpeta
@@ -930,6 +944,13 @@ const REPO = "https://github.com/soydanil/terminus";
             <span class="mono">Windows 10 u 11 · 64 bits</span>
             <span class="punto" aria-hidden="true">·</span>
             <a class="hero__aviso" href={RELEASES}>Ver versiones</a>
+            <span class="punto" aria-hidden="true">·</span>
+            <a
+              class="hero__aviso"
+              href="mailto:hola@danil.ai?subject=Gobernanza%20de%20agentes"
+            >
+              ¿Agentes contra producción a escala? Hablemos
+            </a>
           </p>
         </div>
       </section>
