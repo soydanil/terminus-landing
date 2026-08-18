@@ -23,7 +23,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Wrangler 4.x (el que usa el proyecto) exige Node 22+. Con Node 20 la
+          # acción cae a un wrangler viejo que no despliega un Worker de solo
+          # assets, y falla con «Missing entry-point».
+          node-version: 22
           cache: npm
 
       - name: Instalar dependencias
