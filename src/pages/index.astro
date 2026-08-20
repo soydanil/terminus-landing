@@ -41,18 +41,17 @@ const DESCARGA = `${RELEASES}/download/Terminus-Windows-Setup.exe`;
 /** El icono de la app instalada. Es el isotipo de Danil: la misma marca. */
 const ICONO = "/marca/terminus-icono.png";
 /**
- * **macOS está cableado detrás de un flag, no prometido.** Hoy no hay build de
- * macOS publicada, así que un botón «Descargar para macOS» llevaría a un 404 —
- * la venta chafa que se paga en el primer clic. El camino está listo y apagado:
- * el día que exista la build se cambia `false` por `true` y aparece el segundo
- * botón, nada más. Con `false` la página solo dice, seca, que viene en camino.
- */
-const MAC_DISPONIBLE = false;
-/**
  * **Nombre estable del instalador de macOS, sin versión dentro.** Igual que el
  * de Windows: `latest` resuelve la release y este nombre tiene que existir tal
- * cual dentro de ella. *Pendiente:* cada release aún no publica esta copia —
- * hacerlo el día que salga la primera build de macOS, antes de encender el flag.
+ * cual dentro de ella. Cada release publica esta copia, y su corrida se cae si
+ * no se puede descargar — el botón no puede quedarse apuntando a un 404 sin que
+ * alguien se entere.
+ *
+ * Es **Apple Silicon**: el git que la app trae dentro se empaqueta desde la
+ * máquina que compila, así que un binario universal llevaría un git de una sola
+ * arquitectura. Un Mac Intel usaría el git del sistema, camino que la app cubre,
+ * pero no recibe actualizaciones automáticas: `latest.json` solo declara arm64,
+ * a propósito, para no mandarle un binario que no puede ejecutar.
  */
 const DESCARGA_MAC = `${RELEASES}/download/Terminus-macOS.dmg`;
 /** El repositorio público de Terminus. */
@@ -177,29 +176,24 @@ const REPO = "https://github.com/soydanil/terminus";
               </div>
             </div>
 
-            <!-- macOS, honesto: sin botón falso mientras no exista la build. El
-                 camino está detrás de MAC_DISPONIBLE; encenderlo saca el segundo
-                 botón sin tocar nada más. -->
-            {
-              MAC_DISPONIBLE ? (
-                <a
-                  class="boton boton--linea boton--grande hero__mac-boton"
-                  href={DESCARGA_MAC}
-                >
-                  <svg
-                    class="boton__glifo"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8s-1.7-.8-2.9-.8c-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.7 2.2 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7 1.9-1.1 2.6-2.1c.8-1.2 1.2-2.4 1.2-2.4s-2.2-.9-2.4-3.6zM14.3 6.1c.6-.7 1-1.7.9-2.7-.9 0-1.9.6-2.5 1.3-.5.6-1 1.6-.9 2.6 1 .1 1.9-.5 2.5-1.2z" />
-                  </svg>
-                  Descargar para macOS
-                </a>
-              ) : (
-                <p class="hero__mac">macOS: en camino.</p>
-              )
-            }
+            <!-- macOS. El botón está porque el archivo existe: cada release
+                 publica su .dmg con este nombre. El día que dejara de existir,
+                 lo que hay que quitar es esto — no apagar un interruptor que
+                 nadie volvería a mirar. -->
+            <a
+              class="boton boton--linea boton--grande hero__mac-boton"
+              href={DESCARGA_MAC}
+            >
+              <svg
+                class="boton__glifo"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M16.4 12.7c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8s-1.7-.8-2.9-.8c-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.7 2.2 1.1 0 1.5-.7 2.8-.7s1.6.7 2.8.7 1.9-1.1 2.6-2.1c.8-1.2 1.2-2.4 1.2-2.4s-2.2-.9-2.4-3.6zM14.3 6.1c.6-.7 1-1.7.9-2.7-.9 0-1.9.6-2.5 1.3-.5.6-1 1.6-.9 2.6 1 .1 1.9-.5 2.5-1.2z" />
+              </svg>
+              Descargar para macOS
+            </a>
 
             <!-- El aviso de Windows se enuncia aquí, pegado al botón, y no al
                  final de la página. Enterarse después de descargar es la forma
@@ -882,10 +876,12 @@ const REPO = "https://github.com/soydanil/terminus";
           </div>
           <div class="estado__fila">
             <p class="estado__que">macOS</p>
-            <p class="estado__detalle">Sin instalador.</p>
+            <p class="estado__detalle">
+              Apple Silicon. Se actualiza sola. En un Mac Intel corre, pero
+              las actualizaciones hay que bajarlas a mano.
+            </p>
             <p class="estado__marca">
-              <span class="punto-estado punto-estado--apagado" aria-hidden="true"></span>
-              Todavía no
+              <span class="punto-estado" aria-hidden="true"></span>Disponible
             </p>
           </div>
           <div class="estado__fila">
@@ -893,6 +889,7 @@ const REPO = "https://github.com/soydanil/terminus";
             <p class="estado__detalle">
               Sin certificado. Windows avisa la primera vez:
               <span class="mono">Más información → Ejecutar de todos modos</span>.
+              En macOS, <span class="mono">botón derecho → Abrir</span>.
             </p>
             <p class="estado__marca">
               <span class="punto-estado punto-estado--apagado" aria-hidden="true"></span>
