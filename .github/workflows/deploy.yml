@@ -16,25 +16,28 @@ on:
   workflow_dispatch:
   # La página enseña la versión publicada y la resuelve AL COMPILAR, así que
   # sin esto una release nueva no aparecería hasta el siguiente cambio de la
-  # landing. Cada hora se vuelve a compilar y a desplegar: el número se pone al
-  # día solo, sin que nadie tenga que acordarse — que es justo lo que se quería
-  # evitar al no escribirlo a mano.
+  # landing. El reloj la vuelve a compilar sola, sin que nadie tenga que
+  # acordarse — que es justo lo que se quería evitar al no escribir el número
+  # a mano.
   #
-  # Es barato: en un repo público las Actions no gastan minutos, y el
-  # despliegue es un sitio estático de una página.
+  # **Cada diez minutos, y el reloj es todo lo que hay.** Lo ideal sería que el
+  # flujo de publicación de `soydanil/terminus` avisara al terminar una release
+  # —la página se rehace en el minuto— pero eso pide un token cruzado entre dos
+  # repos y se decidió no crearlo. Sin él, esto es lo que queda, y diez minutos
+  # de ventana valen bastante más que sesenta.
   #
-  # **El reloj es la red de seguridad, no el camino principal.** El camino es
-  # el `repository_dispatch` de abajo: publicar una release avisa aquí y la
-  # página se rehace en el minuto. El cron se queda porque un aviso puede
-  # perderse —token caducado, corrida cancelada, fallo de red— y sin él la
-  # página se quedaría en una versión vieja sin que nadie se entere.
+  # Es barato: en un repo público las Actions no gastan minutos y el despliegue
+  # es un sitio estático de una página. GitHub puede retrasar una corrida
+  # programada cuando hay carga, así que la ventana real es «diez minutos y
+  # algo», no un compromiso.
+  #
+  # Si algún día existe el token, el receptor está listo: descomentar esto y
+  # añadir el paso emisor allá.
+  #
+  #   repository_dispatch:
+  #     types: [release-publicada]
   schedule:
-    - cron: "17 * * * *"
-  # Lo dispara el flujo de publicación de `soydanil/terminus` al terminar una
-  # release, con un token de repositorio guardado allá. Es lo que quita la hora
-  # de espera entre publicar y verlo aquí.
-  repository_dispatch:
-    types: [release-publicada]
+    - cron: "*/10 * * * *"
 
 jobs:
   desplegar:
