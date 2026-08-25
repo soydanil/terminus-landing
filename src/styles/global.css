@@ -1841,3 +1841,289 @@ a:focus-visible,
 .cierre__recap .punto-estado {
   background: var(--green);
 }
+
+/* ============================================================================
+   El recorrido — las cuatro etapas de una tarea.
+
+   Es una lista ordenada de verdad (`<ol>`), no cuatro cajas: el orden es el
+   argumento. El número va en mono y grande porque es lo que se sigue con el
+   ojo al bajar, y la línea vertical que los une existe para que se lea como
+   una cadena y no como cuatro cosas sueltas.
+   ========================================================================= */
+
+.recorrido {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.etapa {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr;
+  gap: 0 1.25rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--borde);
+  position: relative;
+}
+.etapa:first-child {
+  border-top: 0;
+}
+
+/* La línea que encadena las etapas. Nace bajo el número y muere en el borde
+   de la siguiente; en la última no se dibuja, porque no lleva a ningún lado. */
+.etapa::before {
+  content: "";
+  position: absolute;
+  left: 1.55rem;
+  top: 3.6rem;
+  bottom: 0;
+  width: 1px;
+  background: var(--borde);
+}
+.etapa:last-child::before {
+  display: none;
+}
+
+.etapa__num {
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--texto-tenue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--r-sm);
+  background: var(--superficie);
+  position: relative;
+  z-index: 1;
+}
+
+.etapa__cuerpo h3 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.etapa__cuerpo p {
+  margin: 0 0 0.75rem;
+  color: var(--texto-suave);
+  max-width: 62ch;
+}
+.etapa__cuerpo p:last-child {
+  margin-bottom: 0;
+}
+
+/* El dato de máquina de cada etapa: la misma caja que `.dato`, con sitio para
+   una marca a la izquierda y un estado a la derecha. */
+.etapa__dato {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  background: var(--superficie-honda);
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+.etapa__fin {
+  margin-left: auto;
+  color: var(--texto-tenue);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.etapa__marca {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: var(--purple);
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .etapa {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .etapa::before {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   Permisos — la tabla que sale de la API, no de la memoria.
+
+   Es una rejilla y no una `<table>` porque en móvil la tercera columna se cae
+   debajo; una tabla real ahí obliga a scroll horizontal, que es la forma más
+   rápida de que nadie la lea.
+   ========================================================================= */
+
+.permisos {
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  background: var(--superficie);
+  overflow: hidden;
+}
+
+.permisos__cabecera,
+.permisos__fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7rem minmax(0, 1.6fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 0.7rem 1rem;
+}
+
+.permisos__cabecera {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+  background: var(--superficie-honda);
+  border-bottom: 1px solid var(--borde);
+}
+
+.permisos__fila {
+  border-top: 1px solid var(--borde);
+  font-size: 0.85rem;
+}
+.permisos__fila:first-of-type {
+  border-top: 0;
+}
+
+.permisos__que {
+  font-size: 0.82rem;
+  color: var(--texto);
+}
+
+/* El nivel es la columna que importa: escritura se marca, lectura no. La
+   distinción se hace con borde y texto, no con relleno — un chip lleno de
+   color aquí competiría con el botón de acción de la página. */
+.permisos__nivel {
+  justify-self: start;
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+}
+.permisos__nivel--lectura {
+  border-color: var(--borde-fuerte);
+  color: var(--texto-tenue);
+}
+
+.permisos__para {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 720px) {
+  .permisos__cabecera {
+    display: none;
+  }
+  .permisos__fila {
+    grid-template-columns: 1fr auto;
+    row-gap: 0.35rem;
+  }
+  .permisos__para {
+    grid-column: 1 / -1;
+  }
+}
+
+/* La nota que va debajo de un bloque de datos y lo acota. Más chica que el
+   cuerpo y con el ancho corto, para que se lea como pie y no como párrafo. */
+.nota-fina {
+  margin: 1rem 0 0;
+  max-width: 68ch;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--texto-tenue);
+}
+.nota-fina strong {
+  color: var(--texto-suave);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   Los cinco agentes, y las lenguas. Dos filas de pastillas del mismo material:
+   superficie sólida, borde hairline, dato en mono.
+   ========================================================================= */
+
+.agentes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.6rem;
+}
+
+.agente {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  background: var(--superficie);
+}
+.agente__nombre {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+.agente__casa {
+  margin-left: auto;
+  font-size: 0.68rem;
+  color: var(--texto-tenue);
+  white-space: nowrap;
+}
+
+.lenguas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.lengua {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  background: var(--superficie);
+}
+.lengua__nombre {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.lengua__nota {
+  font-size: 0.68rem;
+  color: var(--texto-tenue);
+}
+
+/* La barra de arriba es `sticky`, así que un salto de anclaje deja el título
+   debajo de ella. Los destinos del menú reservan su alto: sin esto, quien pulsa
+   «Permisos» aterriza en un encabezado tapado y cree que el enlace está roto. */
+:target,
+[id="recorrido"],
+[id="permisos"],
+[id="estado"],
+[id="instalar"] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* El dato del pull request lleva marca, título y estado en una línea; el
+   título es lo único que puede ceder, así que se le deja partir y las otras
+   dos se quedan enteras. */
+.etapa__dato .etapa__marca {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 0.1rem;
+}
