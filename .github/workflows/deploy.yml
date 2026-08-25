@@ -14,6 +14,16 @@ on:
     branches: [main]
   # Permite dispararlo a mano desde la pestaña Actions.
   workflow_dispatch:
+  # La página enseña la versión publicada y la resuelve AL COMPILAR, así que
+  # sin esto una release nueva no aparecería hasta el siguiente cambio de la
+  # landing. Cada hora se vuelve a compilar y a desplegar: el número se pone al
+  # día solo, sin que nadie tenga que acordarse — que es justo lo que se quería
+  # evitar al no escribirlo a mano.
+  #
+  # Es barato: en un repo público las Actions no gastan minutos, y el
+  # despliegue es un sitio estático de una página.
+  schedule:
+    - cron: "17 * * * *"
 
 jobs:
   desplegar:
@@ -33,6 +43,12 @@ jobs:
         run: npm ci
 
       - name: Compilar
+        # El token es el del propio flujo, y solo sirve para preguntarle a la
+        # API por la última release. Sin él las IP de Actions comparten el tope
+        # de 60 peticiones por hora y la consulta se rechaza justo los días de
+        # más despliegues — la página saldría sin número.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build
 
       - name: Desplegar a Cloudflare

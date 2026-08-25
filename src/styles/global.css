@@ -2127,3 +2127,30 @@ a:focus-visible,
   align-self: flex-start;
   margin-top: 0.1rem;
 }
+
+/* La versión publicada, al lado de la descarga. Es un enlace a las notas y no
+   un rótulo muerto: quien mira el número suele querer saber qué trae. El punto
+   verde lo empareja con los demás indicadores de estado de la página. */
+.version {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.4rem 0.1rem 0.35rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  color: var(--texto-suave);
+  text-decoration: none;
+  transition:
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.version:hover {
+  border-color: var(--borde-fuerte);
+  color: var(--texto);
+}
+.version__punto {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-full);
+  background: var(--green);
+}

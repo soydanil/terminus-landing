@@ -66,6 +66,52 @@ const DESCARGA_MAC = `${RELEASES}/download/Terminus-macOS.dmg`;
 /** El repositorio público de Terminus. */
 const REPO = "https://github.com/soydanil/terminus";
 /**
+ * La versión publicada, preguntada a GitHub **al compilar**.
+ *
+ * **No se escribe a mano, y esa es toda la decisión.** Un número escrito aquí
+ * se queda viejo el día que salga la siguiente release y nadie se acuerda de
+ * volver a cambiarlo — la página acaba diciendo una versión que ya no existe,
+ * que es peor que no decir ninguna.
+ *
+ * **Se resuelve al compilar y no en el navegador de quien visita.** Sale HTML
+ * estático: se ve con JavaScript apagado, no cuesta una petición a
+ * `api.github.com` por visitante —que tiene tope de 60 por hora y por IP— y no
+ * hay un hueco que se rellena tarde. A cambio, el número es el de la última
+ * compilación: por eso el flujo de despliegue se corre también solo, cada
+ * hora, y así una release nueva aparece aquí sin que nadie toque nada.
+ *
+ * **Falla en silencio y a propósito.** Si GitHub no contesta al compilar, la
+ * página sale sin número en vez de romper el despliegue o inventar uno. Un
+ * dato que falta se nota menos que un dato falso, y la descarga —que es lo que
+ * importa— nunca dependió de esto.
+ */
+async function versionPublicada(): Promise<string | null> {
+  try {
+    const r = await fetch(
+      "https://api.github.com/repos/soydanil/terminus/releases/latest",
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": "terminus-landing",
+          // En CI el token viene del propio flujo: sin él, las IP de GitHub
+          // Actions comparten el tope por hora y la petición sale rechazada
+          // justo los días de más despliegues.
+          ...(process.env.GITHUB_TOKEN
+            ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+            : {}),
+        },
+      },
+    );
+    if (!r.ok) return null;
+    const d = await r.json();
+    // `tag_name` viene como `v0.1.14`; la `v` la pone la página.
+    return typeof d.tag_name === "string" ? d.tag_name.replace(/^v/, "") : null;
+  } catch {
+    return null;
+  }
+}
+const VERSION = await versionPublicada();
+/**
  * Los cinco agentes que la app sabe lanzar. Van en un dato y no en prosa
  * porque el número importa: «funciona con agentes de terminal» no dice nada;
  * cinco con nombre sí.
@@ -233,6 +279,19 @@ const PERMISOS = [
                  final de la página. Enterarse después de descargar es la forma
                  más rápida de perder a alguien. -->
             <p class="hero__requisitos">
+              {
+                VERSION && (
+                  <>
+                    <a class="version" href={RELEASES}>
+                      <span class="version__punto" aria-hidden="true" />
+                      <span class="mono">v{VERSION}</span>
+                    </a>
+                    <span class="punto" aria-hidden="true">
+                      ·
+                    </span>
+                  </>
+                )
+              }
               <span class="mono">Windows 10 u 11 · 64 bits</span>
               <span class="punto" aria-hidden="true">·</span>
               <span>Se actualiza sola</span>
@@ -912,6 +971,23 @@ const PERMISOS = [
         </div>
 
         <div class="estado">
+          {
+            VERSION && (
+              <div class="estado__fila">
+                <p class="estado__que">Última versión</p>
+                <p class="estado__detalle">
+                  <span class="mono">v{VERSION}</span>. La app instalada se
+                  actualiza sola; este número sale de la release publicada, no
+                  está escrito en la página.
+                </p>
+                <p class="estado__marca">
+                  <a class="estado__enlace" href={RELEASES}>
+                    Ver notas
+                  </a>
+                </p>
+              </div>
+            )
+          }
           <div class="estado__fila">
             <p class="estado__que">Windows 10 u 11</p>
             <p class="estado__detalle">
