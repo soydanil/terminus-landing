@@ -22,8 +22,19 @@ on:
   #
   # Es barato: en un repo público las Actions no gastan minutos, y el
   # despliegue es un sitio estático de una página.
+  #
+  # **El reloj es la red de seguridad, no el camino principal.** El camino es
+  # el `repository_dispatch` de abajo: publicar una release avisa aquí y la
+  # página se rehace en el minuto. El cron se queda porque un aviso puede
+  # perderse —token caducado, corrida cancelada, fallo de red— y sin él la
+  # página se quedaría en una versión vieja sin que nadie se entere.
   schedule:
     - cron: "17 * * * *"
+  # Lo dispara el flujo de publicación de `soydanil/terminus` al terminar una
+  # release, con un token de repositorio guardado allá. Es lo que quita la hora
+  # de espera entre publicar y verlo aquí.
+  repository_dispatch:
+    types: [release-publicada]
 
 jobs:
   desplegar:
