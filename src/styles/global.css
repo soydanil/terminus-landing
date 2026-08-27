@@ -582,8 +582,14 @@ a:focus-visible,
   gap: 1.5rem;
   justify-items: center;
 }
+/* `min(18ch, 92vw)` en vez de `18ch` a secas: en un teléfono angosto, 18
+   caracteres de este peso pueden pasarse del ancho real de la pantalla —el
+   tope en `vw` es la red que evita que la caja del titular exceda el
+   viewport. `overflow-wrap: anywhere` es la segunda red: si aun así una
+   palabra no entra, se parte en vez de desbordar en silencio. */
 .hero h1 {
-  max-width: 18ch;
+  max-width: min(18ch, 92vw);
+  overflow-wrap: anywhere;
 }
 .hero__bajada {
   font-size: clamp(1.0625rem, 2.2vw, 1.25rem);
@@ -722,6 +728,33 @@ a:focus-visible,
   color: var(--texto);
 }
 
+/* El titular tachado: "inteligencia" queda de pie, "artificial" se tacha y
+   se apaga. No se repone con nada — la idea no es venderse como una IA
+   mejor, es que a la que ya existe le falta gobernanza, y eso se cuenta con
+   pruebas más abajo (el recorrido, los permisos), no con otra palabra acá. */
+.diff {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--r-md);
+  background: var(--superficie);
+  font-size: 0.9375rem;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 1px 2px rgb(0 0 0 / 0.4);
+}
+.diff .mono {
+  color: var(--texto);
+}
+.diff__tachado {
+  color: var(--texto-tenue);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
 /* Pastilla de arranque: mono, hairline, sin relleno de color. */
 .pastilla {
   display: inline-flex;
@@ -817,6 +850,78 @@ a:focus-visible,
   line-height: 1;
 }
 
+/* Fila de pestañas: a la izquierda las tareas abiertas —así se navega entre
+   varias a la vez—, a la derecha el panel, que también es por pestañas
+   (Adjuntos/Artefactos/Código) y no una columna que está siempre puesta. Es
+   la fila que le faltaba a la captura vieja para ser la app real, no una
+   ilustración de la app. */
+.pestanas-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 34px;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid var(--borde);
+  background: var(--superficie-honda);
+}
+.pestanas__icono {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--r-sm);
+  color: var(--texto-tenue);
+}
+.pestanas {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow: hidden;
+}
+.pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 12rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: var(--r-sm);
+  font-size: 0.75rem;
+  color: var(--texto-tenue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* La pestaña de tarea activa: caja clara y la equis de cerrar, como en la
+   app. Las del panel (ver abajo) marcan su activa distinto —con un filo, no
+   una caja— porque son pestañas de una sola fila, no tareas para cerrar. */
+.pestana--activa {
+  color: var(--texto);
+  background: var(--superficie-alta);
+  font-weight: 500;
+}
+.pestana__x {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  opacity: 0.7;
+}
+.pestanas--panel {
+  margin-left: auto;
+  gap: 0.9rem;
+  padding-right: 0.25rem;
+}
+.pestana--panel {
+  padding: 0.3rem 0.1rem;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+}
+.pestana--panel.pestana--activa {
+  background: none;
+  border-bottom-color: var(--accion);
+}
+
 .ventana__cuerpo {
   display: grid;
   grid-template-columns: 216px minmax(0, 1fr) 256px;
@@ -824,12 +929,18 @@ a:focus-visible,
   background: #000;
 }
 
+/* `overflow-x: hidden`: sin esto, una fila que no entra —la franja de costo,
+   una línea de la bitácora con un nombre largo— no se envuelve, se derrama
+   sobre la columna de al lado. Una columna de grid no recorta el contenido
+   de su vecina sola; hay que decírselo a cada panel. Vertical se deja libre:
+   el `min-height` de la ventana ya evita que haga falta. */
 .panel {
   padding: 0.75rem;
   display: grid;
   gap: 0.5rem;
   align-content: start;
   min-width: 0;
+  overflow-x: hidden;
 }
 .panel--izq {
   border-right: 1px solid var(--borde);
@@ -1144,10 +1255,13 @@ a:focus-visible,
   border: 1px solid var(--borde-fuerte);
   color: var(--texto-suave);
 }
+/* Sólido, no un contorno más: así lo pinta la app de verdad —el mismo
+   amarillo del botón de descarga, aplicado al mismo gesto (la acción
+   primaria de la pantalla en la que está). */
 .tecla-redonda--enviar {
-  background: var(--superficie-alta);
-  border-color: var(--borde-fuerte);
-  color: var(--texto);
+  background: var(--accion);
+  border-color: var(--accion);
+  color: var(--accion-texto);
 }
 .selector {
   display: inline-flex;
@@ -1212,11 +1326,13 @@ a:focus-visible,
   color: var(--texto-suave);
 }
 
-/* En pantallas chicas la ventana se queda en la conversación: tres columnas
-   de 100 px no son una captura, son un borrón. Y lo que sobra se va —los
-   medidores, el selector de modelo— en vez de quedarse cortado por el borde:
-   una captura recortada a lo ancho parece una página rota, no una app. */
-@media (max-width: 900px) {
+/* El punto de quiebre bajó de 900px a 620px: con `overflow-x: hidden` en
+   cada panel (ver `.panel` arriba) las tres columnas ya no se derraman una
+   sobre otra al angostarse, así que pueden aguantar mucho más abajo de lo
+   que aguantaban antes —probado a mano cada ~50px hasta acá—. Por debajo de
+   esto la columna central queda en dos o tres letras por línea: ahí ya no
+   es una ventana angosta, es un borrón, y se cae a la sola conversación. */
+@media (max-width: 620px) {
   .ventana__cuerpo {
     grid-template-columns: minmax(0, 1fr);
     min-height: 0;
@@ -1244,6 +1360,17 @@ a:focus-visible,
   }
   .consumo .franja-larga {
     display: none;
+  }
+  /* La fila de pestañas es la primera en desbordar a lo ancho: el switch de
+     panel (Adjuntos/Artefactos/Código) no cabe con las pestañas de tarea. Se
+     va entero —igual que el selector de modelo— y la pestaña activa se
+     encoge para que la fila no empuje el ancho de la página. */
+  .pestanas--panel,
+  .pestanas__icono {
+    display: none;
+  }
+  .pestana {
+    max-width: 8.5rem;
   }
 }
 
@@ -1341,6 +1468,10 @@ a:focus-visible,
   font-family: "Geist Mono", ui-monospace, monospace;
   font-size: 0.6875rem;
   color: var(--texto-suave);
+}
+.chip .icono {
+  width: 11px;
+  height: 11px;
 }
 
 /* ============================================================================
